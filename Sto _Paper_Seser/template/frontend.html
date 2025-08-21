@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stone . Paper . Seser</title>
+  <style>
+    :root {
+      --bg: #0b1220;
+      --card: #111827;
+      --lose: #ef4444;
+      --win: green;
+      --musted: #9ca3af;
+      --text: #e5e7eb;
+      --draw: #f59e0b;
+    }
+    body {
+      margin: 0;
+      font-family: system-ui, Segoe UI, Roboto, Arial;
+      background: var(--bg);
+      color: var(--text);
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      padding: 24px;
+    }
+    .app { width: 100%; max-width: 700px; }
+    .card {
+      background: var(--card);
+      border: 1px solid #374151;
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.35);
+    }
+    h1 { text-align: center; margin: 0 0 6px; font-size: 28px; }
+    .sub { color: var(--musted); text-align: center; margin-bottom: 14px; }
+    .control { display: flex; gap: 10px; justify-content: center; margin: 10px 0; }
+    .btn {
+      background: #0b1020;
+      border: 1px solid #475569;
+      color: var(--text);
+      padding: 10px 14px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .btn:hover { border-color: #93c5fd; }
+    .status { text-align: center; margin: 12px 0; }
+    .pill {
+      display: inline-block; padding: 6px 10px;
+      border-radius: 999px; font-weight: bold;
+    }
+    .win { background: rgba(22,163,74,.15); color: var(--win); border: 1px solid rgba(22,163,74,.35); }
+    .lose { background: rgba(239,68,68,.15); color: var(--lose); border: 1px solid rgba(239,68,68,.35); }
+    .draw { background: rgba(245,158,11,.15); color: var(--draw); border: 1px solid rgba(245,158,11,.35); }
+    .vs { display: flex; justify-content: space-around; margin-top: 12px; }
+    .hand {
+      font-size: 54px;
+      background: #0b1020;
+      border: 1px solid #374151;
+      border-radius: 14px;
+      padding: 10px;
+    }
+    .meta { text-align: center; color: var(--musted); margin-top: 4px; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="card">
+      <h1>Stone . Paper . Seser</h1>
+      <p class="sub">(s=stone, p=paper, k=seser)</p>
+
+      <div class="control">
+        <button class="btn" data-key="s">🪨 Stone</button>
+        <button class="btn" data-key="p">📄 Paper</button>
+        <button class="btn" data-key="k">✂️ Seser</button>
+      </div>
+
+      <div class="status" id="status">Choose your move</div>
+
+      <div class="vs">
+        <div>
+          <div class="hand" id="youHand">❔</div>
+          <div class="meta" id="youMeta">You chose: -</div>
+        </div>
+        <div>
+          <div class="hand" id="cpuHand">❔</div>
+          <div class="meta" id="cpuMeta">Computer chose: -</div>
+        </div>
+      </div>
+
+      <div class="legend">Keyboard: press <b>s</b>, <b>p</b>, or <b>k</b></div>
+    </div>
+  </div>
+
+  <script>
+    const emojiFor = { stone: "🪨", paper: "📄", seser: "✂️" };
+    const el = {
+      status: document.getElementById("status"),
+      youHand: document.getElementById("youHand"),
+      cpuHand: document.getElementById("cpuHand"),
+      youMeta: document.getElementById("youMeta"),
+      cpuMeta: document.getElementById("cpuMeta"),
+    };
+
+    async function play(choice) {
+      const res = await fetch("play", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ choice: choice })
+      });
+      const data = await res.json();
+
+      // update hands + text
+      el.youHand.textContent = emojiFor[data.player] || "❔";
+      el.cpuHand.textContent = emojiFor[data.computer] || "❔";
+
+      el.youMeta.textContent = "You chose: " + data.player;
+      el.cpuMeta.textContent = "Computer chose: " + data.computer;
+
+      el.status.innerHTML = `<span class="pill ${data.result}">${data.message}</span>`;
+    }
+
+    // buttons
+    document.querySelectorAll(".btn[data-key]").forEach(b =>
+      b.addEventListener("click", () => play(b.dataset.key))
+    );
+
+    // keyboard
+    window.addEventListener("keydown", e => {
+      const k = e.key.toLowerCase();
+      if (["s", "p", "k"].includes(k)) play(k);
+    });
+  </script>
+</body>
+</html>
