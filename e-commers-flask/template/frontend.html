@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Shop (Flask)</title>
+  <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@2/css/pico.min.css">
+</head>
+<body class="container">
+  <main>
+    <h1>🛒 Mini Shop</h1>
+    <div class="grid">
+      {% for p in products %}
+      <article>
+        <h3>{{p.name}}</h3>
+        <p>₹{{p.price}}</p>
+        <form method="POST" action="/add/{{p.id}}"><button>Add to Cart</button></form>
+      </article>
+      {% endfor %}
+    </div>
+    <hr/>
+    <h3>Cart</h3>
+    <ul>
+      {% for pid, qty in cart.items() %}
+        {% set prod = (products | selectattr('id','equalto', pid|int) | list)[0] %}
+        <li>{{prod.name}} × {{qty}} — ₹{{prod.price * qty}}
+          <form style="display:inline" method="POST" action="/remove/{{pid}}"><button>−</button></form>
+        </li>
+      {% else %}
+        <p>Cart is empty.</p>
+      {% endfor %}
+    </ul>
+    <p><strong>Total:</strong> ₹{{total}}</p>
+    <form method="POST" action="/checkout"><button class="contrast" {% if not cart %}disabled{% endif %}>Checkout</button></form>
+  </main>
+</body>
+</html>
