@@ -1,0 +1,30 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Realtime Chat (FastAPI)</title>
+  <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@2/css/pico.min.css">
+  <style>#log{height:60vh;overflow:auto;border:1px solid #ddd;padding:1rem;border-radius:.75rem}</style>
+</head>
+<body class="container">
+  <main>
+    <h1>⚡ Real-time Chat</h1>
+    <div id="log"></div>
+    <form id="f"><input id="m" placeholder="Say something..." required><button>Send</button></form>
+  </main>
+  <script>
+    const log = document.getElementById("log");
+    const m = document.getElementById("m");
+    const f = document.getElementById("f");
+    const ws = new WebSocket((location.protocol === "https:" ? "wss://" : "ws://") + location.host + "/ws");
+    function line(t){ const p=document.createElement("p"); p.textContent=t; log.appendChild(p); log.scrollTop=log.scrollHeight; }
+    ws.onmessage = (e)=> line(e.data);
+    f.addEventListener("submit", e=>{
+      e.preventDefault();
+      ws.send(m.value);
+      m.value="";
+    });
+  </script>
+</body>
+</html>
