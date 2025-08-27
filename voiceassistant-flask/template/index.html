@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Voice Assistant</title>
+  <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@2/css/pico.min.css">
+</head>
+<body class="container">
+  <main>
+    <h1>🗣️ Voice Assistant</h1>
+    <p>Click mic and speak. Your browser transcribes using the Web Speech API.</p>
+    <button id="mic">🎙️ Speak</button>
+    <p><strong>Heard:</strong> <span id="heard">—</span></p>
+    <p><strong>Assistant:</strong> <span id="ans">—</span></p>
+  </main>
+  <script>
+    const heard = document.getElementById("heard");
+    const ans = document.getElementById("ans");
+    const mic = document.getElementById("mic");
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const synth = window.speechSynthesis;
+
+    async function ask(q){
+      const r = await fetch("/ask", {method:"POST", headers:{'Content-Type':'application/json'}, body: JSON.stringify({q})});
+      const j = await r.json();
+      ans.textContent = j.answer;
+      const u = new SpeechSynthesisUtterance(j.answer);
+      synth.speak(u);
+    }
+
+    mic.addEventListener("click", () => {
+      if(!SpeechRecognition){ alert("Web Speech API not supported."); return; }
+      const rec = new SpeechRecognition();
+      rec.lang = "en-US";
+      rec.start();
+      rec.onresult = e => {
+        const q = Array.from(e.results).map(r => r[0].transcript).join(" ");
+        heard.textContent = q;
+        ask(q);
+      };
+    });
+  </script>
+</body>
+</html>
