@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>To-Do List (Flask)</title>
+  <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@2/css/pico.min.css">
+  <style>
+    .done { text-decoration: line-through; opacity: .7 }
+    .row { display:flex; align-items:center; justify-content:space-between; gap: .75rem; }
+  </style>
+</head>
+<body class="container">
+  <main>
+    <h1>📝 To-Do</h1>
+    <form method="POST" action="/add">
+      <input name="title" placeholder="Add a new task..." required />
+      <button type="submit">Add</button>
+    </form>
+    <hr/>
+    <ul>
+      {% for t in tasks %}
+      <li class="row">
+        <div class="{{ 'done' if t.done else '' }}">{{ t.title }}</div>
+        <div class="row" style="gap:.5rem">
+          <form method="POST" action="/toggle/{{t.id}}"><button>Toggle</button></form>
+          <form method="POST" action="/delete/{{t.id}}"><button class="contrast">Delete</button></form>
+        </div>
+      </li>
+      {% else %}
+      <p>No tasks yet.</p>
+      {% endfor %}
+    </ul>
+  </main>
+</body>
+</html>
