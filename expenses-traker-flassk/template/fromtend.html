@@ -1,0 +1,72 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Expense Tracker</title>
+  <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@2/css/pico.min.css">
+</head>
+<body class="container">
+  <main>
+    <h1>💸 Expense Tracker</h1>
+    <form method="POST">
+      <input name="title" placeholder="Title" required>
+      <input name="category" placeholder="Category (Food, Rent...)" required>
+      <input name="amount" type="number" step="0.01" placeholder="Amount" required>
+      <button type="submit">Add</button>
+    </form>
+    <hr/>
+    <h3>Entries</h3>
+    <table>
+      <thead><tr><th>Title</th><th>Category</th><th>Amount</th><th></th></tr></thead>
+      <tbody>
+      {% for r in rows %}
+        <tr>
+          <td>{{r.title}}</td>
+          <td>{{r.category}}</td>
+          <td>{{"%.2f"|format(r.amount)}}</td>
+          <td>
+            <form method="POST" action="/delete/{{r.id}}">
+              <button>Delete</button>
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+
+    <h3>Totals by Category</h3>
+    <ul id="totals">
+      {% for k,v in totals.items() %}
+        <li><strong>{{k}}</strong>: {{ "%.2f"|format(v) }}</li>
+      {% endfor %}
+    </ul>
+
+    <canvas id="chart" width="600" height="300"></canvas>
+  </main>
+  <script>
+    const data = {{ totals | tojson }};
+    const ctx = document.getElementById('chart').getContext('2d');
+    // Very small vanilla JS chart
+    const keys = Object.keys(data), vals = Object.values(data);
+    const maxV = Math.max(1, ...vals);
+    const W = 600, H = 300, pad = 40;
+    function draw(){
+      ctx.clearRect(0,0,W,H);
+      // axes
+      ctx.beginPath();
+      ctx.moveTo(pad, pad); ctx.lineTo(pad, H-pad); ctx.lineTo(W-pad, H-pad); ctx.stroke();
+      // bars
+      const bw = (W - 2*pad) / Math.max(1, keys.length);
+      keys.forEach((k, i) => {
+        const h = (H - 2*pad) * (vals[i] / maxV);
+        const x = pad + i*bw + 10;
+        const y = H - pad - h;
+        ctx.fillRect(x, y, bw - 20, h);
+        ctx.fillText(k, x, H - pad + 15);
+      });
+    }
+    draw();
+  </script>
+</body>
+</html>
